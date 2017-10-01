@@ -1,0 +1,25 @@
+{
+    "name": "xilix/stgen",
+    "description": "Stub generator",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitriy Kachurovskiy",
+            "email": "kachurovskiyds@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Stgen\\": "src/"
+        }
+    },
+    "require": {
+        "zendframework/zend-code": "^3.1",
+        "symfony/console": "^3.3"
+    },
+    "bin": [
+        "bin/stgen"
+    ]
+}
