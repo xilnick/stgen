@@ -17,8 +17,7 @@ class ClassUtil
      */
     public function pathToPSR4Name($path, $basePath, $namespace = null)
     {
-        $path = realpath($path);
-        $basePath = rtrim(realpath($basePath)) . '/';
+        $basePath = rtrim($basePath) . '/';
         if (strpos($path, $basePath) !== 0) {
             throw new InvalidArgumentException(
                 "File path `{$path}` does not corresponds to a base path `{$basePath}`."

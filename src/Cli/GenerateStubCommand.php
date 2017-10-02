@@ -6,6 +6,7 @@ namespace Stgen\Cli;
 
 use Stgen\CodeGenerator;
 use Stgen\GenerateStrategy\ReflectionStubGenerateStrategy;
+use Stgen\Source\BlacklistSourceDecorator;
 use Stgen\Source\PSR4ClassSource;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -51,29 +52,75 @@ class GenerateStubCommand extends Command
                 'autoloader',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Autoloader file which will be included for loading source files.'
+                'Colon-separated list of autoloader files which will be included for loading source files.'
+            )
+            ->addOption(
+                'blacklist',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Colon-separated list of path which must be excluded from generated list.'
             );
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $src = realpath($input->getArgument('sourcePath'));
+        $this->processAutoloader($input->getOption('autoloader'));
+
         $savePath = $input->getArgument('savePath');
-
+        $src = realpath($input->getArgument('sourcePath'));
         $namespacePref = $input->getOption('namespace');
-        $autoloader = realpath($input->getOption('autoloader'));
+        $source = new PSR4ClassSource($src, $namespacePref);
 
-        if ($autoloader) {
-            require_once $autoloader;
+        $blacklist = $this->prepareBlackList($input->getOption('blacklist'));
+        if ($blacklist) {
+            $source = new BlacklistSourceDecorator($source, $blacklist);
         }
 
         $generator = new CodeGenerator(
             new ReflectionStubGenerateStrategy(),
-            new PSR4ClassSource($src, $namespacePref)
+            $source
         );
 
         $generated = $generator->generate();
-        $output->writeln($generated);
+        /* todo move saving to flush strategy (structured filesystem, stream (string, stdout) ) */
         file_put_contents($savePath, "<?php\n\n" . $generated);
+    }
+
+    /**
+     * @param $list
+     * @return array
+     */
+    public function prepareBlackList($list)
+    {
+        $list = explode(':', (string)$list);
+        array_walk($list, function (&$v) {
+            return realpath($v);
+        });
+        $list = array_filter($list, function ($v) {
+            return $v;
+        });
+        return $list;
+    }
+
+    /**
+     * @param string $autoloaders
+     */
+    public function processAutoloader($autoloaders) {
+        $autoloaders = explode(':', $autoloaders);
+        foreach ($autoloaders as $autoloader) {
+            $autoloader = realpath($autoloader);
+            if ($autoloader) {
+                $this->requireIsolated($autoloader);
+            }
+        }
+    }
+
+    /**
+     * Scope isolated require.
+     * @param string $path
+     */
+    public function requireIsolated(string $path)
+    {
+        require $path;
     }
 }

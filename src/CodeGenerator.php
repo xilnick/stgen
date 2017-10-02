@@ -20,7 +20,6 @@ class CodeGenerator
     private $source;
 
     /**
-     * todo add strategy for storing generated files
      * CodeGenerator constructor.
      * @param IGenerateStrategy $strategy
      * @param ISource $source
@@ -40,7 +39,7 @@ class CodeGenerator
         $res = '';
         foreach ($this->source as $sourceItem) {
             try {
-               echo $res .= $this->strategy->generate($sourceItem) . "\n\n";
+                $res .= $this->strategy->generate($sourceItem) . "\n\n";
             } catch (\Throwable $e) {
             }
         }

@@ -84,12 +84,20 @@ class PSR4ClassSource implements ISource
     }
 
     /**
+     * @inheritDoc
+     */
+    public function current()
+    {
+        return $this->currentItem();
+    }
+
+    /**
      * @inheritdoc
      */
-    function current(): ISourceItem
+    function currentItem(): ISourceItem
     {
         $classDetect = new ClassUtil();
-        $path = $this->delegateIterator->current()->getPathname();
+        $path = realpath($this->delegateIterator->current()->getPathname());
         $class = $classDetect->pathToPSR4Name($path, $this->basePath, $this->baseNamespace);
         return new ClassSourceItem($path, $class);
     }

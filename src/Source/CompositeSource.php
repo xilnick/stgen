@@ -59,9 +59,17 @@ class CompositeSource implements ISource
     }
 
     /**
+     * @inheritDoc
+     */
+    public function current()
+    {
+        return $this->currentItem();
+    }
+
+    /**
      * @return ISourceItem
      */
-    function current(): ISourceItem
+    function currentItem(): ISourceItem
     {
         return $this->iteratorDelegate->current();
     }

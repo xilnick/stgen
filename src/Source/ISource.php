@@ -6,5 +6,5 @@ use Stgen\Source\Item\ISourceItem;
 
 interface ISource extends \Iterator
 {
-    function current(): ISourceItem;
+    function currentItem(): ISourceItem;
 }
