@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Stgen\GenerateStrategy;
+namespace Stgen\Generator;
 
 use Stgen\Source\Item\ISourceItem;
 use Zend\Code\Generator\ClassGenerator;

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Stgen\Cli;
 
 use Stgen\CodeGenerator;
-use Stgen\GenerateStrategy\ReflectionStubGenerateStrategy;
+use Stgen\Writer\SingleFileWriter;
+use Stgen\Generator\ReflectionStubGenerateStrategy;
 use Stgen\Source\BlacklistSourceDecorator;
 use Stgen\Source\PSR4ClassSource;
+use Stgen\Source\SingleFileClassSource;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -67,23 +69,30 @@ class GenerateStubCommand extends Command
         $this->processAutoloader($input->getOption('autoloader'));
 
         $savePath = $input->getArgument('savePath');
-        $src = realpath($input->getArgument('sourcePath'));
+        $sourcePath = realpath($input->getArgument('sourcePath'));
         $namespacePref = $input->getOption('namespace');
-        $source = new PSR4ClassSource($src, $namespacePref);
+
+        if (is_dir($sourcePath)) {
+            $source = new PSR4ClassSource($sourcePath, $namespacePref);
+        } else {
+            $source = new SingleFileClassSource($sourcePath, $namespacePref);
+        }
+
+        $writer = new SingleFileWriter($sourcePath);
 
         $blacklist = $this->prepareBlackList($input->getOption('blacklist'));
+
         if ($blacklist) {
             $source = new BlacklistSourceDecorator($source, $blacklist);
         }
 
         $generator = new CodeGenerator(
             new ReflectionStubGenerateStrategy(),
-            $source
+            $source,
+            $writer
         );
 
-        $generated = $generator->generate();
-        /* todo move saving to flush strategy (structured filesystem, stream (string, stdout) ) */
-        file_put_contents($savePath, "<?php\n\n" . $generated);
+        $generator->generate();
     }
 
     /**
@@ -105,7 +114,8 @@ class GenerateStubCommand extends Command
     /**
      * @param string $autoloaders
      */
-    public function processAutoloader($autoloaders) {
+    public function processAutoloader($autoloaders)
+    {
         $autoloaders = explode(':', $autoloaders);
         foreach ($autoloaders as $autoloader) {
             $autoloader = realpath($autoloader);

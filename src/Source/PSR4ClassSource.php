@@ -50,7 +50,6 @@ class PSR4ClassSource implements ISource
         );
     }
 
-
     /**
      * @inheritdoc
      */

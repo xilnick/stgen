@@ -1,6 +1,6 @@
 <?php
 
-namespace Stgen\GenerateStrategy;
+namespace Stgen\Generator;
 
 use Stgen\Source\Item\ISourceItem;
 
